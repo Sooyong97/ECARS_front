@@ -193,3 +193,24 @@ export const verifypw = (id, email, code) => {
     console.log(error);
   })
 }
+
+// 비밀번호 변경 요청
+export const resetPassword = (id, newPassword) => {
+  return axios.post(SERVER_URL + 'api/accounts/changepw/', { id, newPassword }, {
+    headers: {
+      'X-CSRFToken': csrftoken
+    }
+  })
+  .then((res) => {
+    return res.data.message === 'PASSWORD_UPDATED';
+  })
+  .catch((error) => {
+    const msg = error.response?.data?.message;
+    if (msg === 'INVALID_PASSWORD') {
+      errorWithoutBtn('비밀번호는 최소 8자 이상, 대/소문자, 숫자, 특수문자를 포함해야 합니다.');
+    } else {
+      errorWithoutBtn('비밀번호 변경 중 오류가 발생했습니다.');
+    }
+    console.error('resetPassword:', error);
+  })
+}

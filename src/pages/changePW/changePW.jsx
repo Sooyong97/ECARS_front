@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
 // js
-import { changepw, verifypw } from '../../apis/user';
+import { changepw, verifypw, resetPassword } from '../../apis/user';
 import { isValidEmail } from '../../utils/utils';
 import { errorWithoutBtn, successWithoutBtn } from '../../utils/swal';
 
@@ -49,8 +49,10 @@ function FindPW() {
         return;
       }
 
-      // 여기에 resetPassword 호출 추가 예정
-      successWithoutBtn('비밀번호가 변경되었습니다.', '', () => {});
+      const updated = await resetPassword(id, newPassword);
+      if (updated) {
+        successWithoutBtn('비밀번호가 변경되었습니다.', '', () => {});
+      }
     }
   }
 
