@@ -7,22 +7,29 @@ const SERVER_URL = process.env.REACT_APP_SERVER_URL
 
 // 로그인
 export const login = (id, password) => {
-  axios.post(SERVER_URL + 'api/auth/signin/', {id, password}, {
+  axios.post(SERVER_URL + 'api/auth/signin/', { id, password }, {
     headers: {
       'X-CSRFToken': csrftoken
     }
   })
   .then((res) => {
-    const access = res.data.token;
-    localStorage.setItem('access', access);
-    window.location.href = '/main';
+    const token = res.data.token;
+    const message = res.data.message;
+    if (message === 'SUCCESS') {
+      localStorage.setItem('access', token);
+      window.location.href = '/main';
+    }
   })
   .catch((error) => {
-    const status = error.response.status;
-    if (status == 401 || 400) errorWithoutBtn('아이디 또는 비밀번호가 일치하지 않습니다.');
-    console.log('로그인', error);
-  })
-}
+    const msg = error.response?.data?.message;
+    if (msg === 'INVALID_CREDENTIALS') {
+      errorWithoutBtn('아이디 또는 비밀번호가 일치하지 않습니다.');
+    } else {
+      errorWithoutBtn('로그인 중 알 수 없는 오류가 발생했습니다.');
+    }
+    console.error('로그인 오류:', error);
+  });
+};
 
 // 아이디 중복 확인
 export const idCheck = (id) => {
