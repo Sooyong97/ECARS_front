@@ -7,7 +7,7 @@ const SERVER_URL = process.env.REACT_APP_SERVER_URL
 
 // 로그인
 export const login = (id, password) => {
-  axios.post(SERVER_URL + 'signin/', {id, password}, {
+  axios.post(SERVER_URL + 'api/auth/signin/', {id, password}, {
     headers: {
       'X-CSRFToken': csrftoken
     }
@@ -26,7 +26,7 @@ export const login = (id, password) => {
 
 // 아이디 중복 확인
 export const idCheck = (id) => {
-  return axios.post(SERVER_URL + 'idcheck/', {id}, {
+  return axios.post(SERVER_URL + 'api/accounts/idcheck/', {id}, {
     headers: {
       'X-CSRFToken': csrftoken
     }
@@ -39,7 +39,7 @@ export const idCheck = (id) => {
 export const emailCheck = (email) => {
   const csrftoken = getCookie('csrftoken');
 
-  return axios.post(SERVER_URL + 'emailcheck/', {email}, {
+  return axios.post(SERVER_URL + 'api/accounts/emailcheck/', {email}, {
     headers: {
       'X-CSRFToken': csrftoken
     }
@@ -53,7 +53,7 @@ export const emailCheck = (email) => {
 
 // 인증코드 발송
 export const sendCode = (email) => {
-  return axios.post(SERVER_URL + 'signupmail/', {email}, {
+  return axios.post(SERVER_URL + 'api/auth/send-email/', {email}, {
     headers: {
       'X-CSRFToken': csrftoken
     }
@@ -70,7 +70,7 @@ export const sendCode = (email) => {
 
 // 인증코드 확인
 export const checkCode = (email, code) => {
-  return axios.post(SERVER_URL + 'emailverify/', {email, code}, {
+  return axios.post(SERVER_URL + 'api/auth/verify-code/', {email, code}, {
     headers: {
       'X-CSRFToken': csrftoken
     }
@@ -90,7 +90,7 @@ export const checkCode = (email, code) => {
 
 // 회원가입
 export const signup = (id, name, email, password) => {
-  return axios.post(SERVER_URL + 'signup/', { name, id, password, email }, {
+  return axios.post(SERVER_URL + 'api/accounts/signup/', { name, id, password, email }, {
     headers: {
       'X-CSRFToken': csrftoken
     }
@@ -132,12 +132,14 @@ export const logout = () => {
 
 // 아이디 찾기 : 이메일 인증코드 발송
 export const findid = (email) => {
-  return axios.post(SERVER_URL + 'findid/', { email }, {
+  return axios.post(SERVER_URL + 'api/accounts/findid/', { email }, {
     headers: {
       'X-CSRFToken': csrftoken
     }
   })
-  .then((res) => {return res.data.valid ? true : false})
+  .then((res) => {
+    return res.data.message === 'EMAIL_SENT';
+  })
   .catch((error) => {
     const status = error.response.status;
     if (status == 404) errorWithoutBtn('해당 이메일로 가입된 정보가 없습니다.');
@@ -147,7 +149,7 @@ export const findid = (email) => {
 
 // 아이디 찾기 : 인증코드 확인
 export const verifyid = (email, code) => {
-  return axios.post(SERVER_URL + 'verifyid/', { email, code }, {
+  return axios.post(SERVER_URL + 'api/accounts/verifyid/', { email, code }, {
     headers: {
       'X-CSRFToken': csrftoken
     }
@@ -164,7 +166,7 @@ export const verifyid = (email, code) => {
 
 // 비밀번호 변경 : 인증코드 발송
 export const changepw = (id, email) => {
-  return axios.post(SERVER_URL + 'findpw/', { id, email }, {
+  return axios.post(SERVER_URL + 'api/accounts/indpw/', { id, email }, {
     headers: {
       'X-CSRFToken': csrftoken
     }
@@ -179,7 +181,7 @@ export const changepw = (id, email) => {
 
 // 비밀번호 변경 : 인증코드 확인
 export const verifypw = (id, email, code) => {
-  return axios.post(SERVER_URL + 'verifypw/', { id, email, code }, {
+  return axios.post(SERVER_URL + 'api/accounts/verifypw/', { id, email, code }, {
     headers: {
       'X-CSRFToken': csrftoken
     }
