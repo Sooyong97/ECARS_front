@@ -15,6 +15,8 @@ function FindPW() {
   const [code, setCode] = useState('');
   const [email, setEmail] = useState('');
   const [isCode, setIsCode] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
 
   // 메일 발송
   const onSend = async () => {
@@ -37,7 +39,19 @@ function FindPW() {
   // 인증번호 확인
   const onClick = async () => {
     const res = await verifypw(id, email, code);
-    // 비밀번호 재설정 페이지로 이동
+    if (res) {
+      if (!newPassword || !confirmPassword) {
+        errorWithoutBtn('새 비밀번호를 입력해주세요.');
+        return;
+      }
+      if (newPassword !== confirmPassword) {
+        errorWithoutBtn('비밀번호가 일치하지 않습니다.');
+        return;
+      }
+
+      // 여기에 resetPassword 호출 추가 예정
+      successWithoutBtn('비밀번호가 변경되었습니다.', '', () => {});
+    }
   }
 
   return (
@@ -77,6 +91,28 @@ function FindPW() {
                   />
                 </>}
               </div>
+              {isCode && (
+                <>
+                  <div className='changepw-inputGroup'>
+                    <label htmlFor="newPassword">새 비밀번호</label>
+                    <input
+                      type="password"
+                      id="newPassword"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                    />
+                  </div>
+                  <div className='changepw-inputGroup'>
+                    <label htmlFor="confirmPassword">비밀번호 확인</label>
+                    <input
+                      type="password"
+                      id="confirmPassword"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                    />
+                  </div>
+                </>
+              )}
               {isCode ? 
                 <button type="button" onClick={onClick}>확인</button> :
                 <button type="button" onClick={onSend}>인증메일 발송</button>
