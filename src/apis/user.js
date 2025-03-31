@@ -120,9 +120,9 @@ export const getUser = async () => {
   const access = localStorage.getItem('access');
 
   try {
-    const res = await axios.post(SERVER_URL + 'userJWT/', {}, {
+    const res = await axios.post(SERVER_URL + 'api/accounts/userJWT/', {}, {
       headers: {
-        Authorization: access
+        Authorization: `Bearer ${access}`
       }
     })
     return res.data
