@@ -20,7 +20,7 @@ export const getReport = () => {
 export const getReportById = (id) => {
   return axios.get(`${SERVER_URL}api/calllogs/${id}`, {
     headers: {
-      'X-CSRFToken': csrftoken
+      Authorization: access
     }
   })
   .then((res) => {return res.data})
@@ -29,7 +29,7 @@ export const getReportById = (id) => {
 
 // 일별 신고 현황 가져오기
 export const getDayLog = () => {
-  return axios.get(SERVER_URL + 'daylog/', {
+  return axios.get(SERVER_URL + 'api/calllogs/daystats', {
     headers: {
       Authorization: access
     }
@@ -40,7 +40,7 @@ export const getDayLog = () => {
 
 // 출동통계 가져오기
 export const getStats = () => {
-  return axios.get(SERVER_URL + 'categorycount/', {
+  return axios.get(SERVER_URL + 'api/calllogs/categorycount', {
     headers: {
       Authorization: access
     }
