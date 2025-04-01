@@ -4,15 +4,13 @@ import { ReactMic } from 'react-mic';
 import { convertToWav } from '../../utils/report';
 
 import './Report.css';
-import io from 'socket.io-client';
+// import io from 'socket.io-client';
 import Overlay from '../../components/call/Overlay';
 import CallModal from '../../components/call/CallModal';
 import { GoBackBtn } from '../../components/CommonStyles';
 import { getReportById } from '../../apis/report';
 
-const socket = io('http://localhost:5000', {
-  transports: ['websocket']
-});
+const socket = useRef(null);
 
 const Report4 = () => {
   const [start, setStart] = useState(false);
@@ -38,33 +36,48 @@ const Report4 = () => {
 
   // 백 -> 프론트 소켓
   useEffect(() => {
-    socket.on('audio_text', (data) => {
-      console.log('Received audio_text:', data);
-      setIsProcessing(false); // 처리 중 상태 해제
+  socket.current = new WebSocket("ws://localhost:8080/ecars/ws/audio");
 
-      let msg = '';
-      if (data.log_id) {
-        getReportById(data.log_id).then((res) => {
-          setAddress(res.fields.address_name);
-          setPlace(res.fields.place_name);
-          setTime(res.fields.date);
-          setContent(res.fields.details);
-          setWhere(res.fields.jurisdiction);
-          setLat(res.fields.lat);
-          setLng(res.fields.lng);
-        })
-        msg = data.message;
-        setDone(true);
-        processChunks(true, data.log_id);
-      }
-      msg = data.message;
-      setChat(prevChat => [...prevChat, { text: msg, isUser: false }]);
-      playTts(msg);
-    });
+  socket.current.onopen = () => {
+    console.log('WebSocket connected');
+  };
 
-    return () => {
-      socket.off('audio_text');
-    };
+  socket.current.onmessage = (event) => {
+    const data = JSON.parse(event.data);
+    console.log('Received:', data);
+    setIsProcessing(false);
+
+    if (data.log_id) {
+      getReportById(data.log_id).then((res) => {
+        setAddress(res.fields.address_name);
+        setPlace(res.fields.place_name);
+        setTime(res.fields.date);
+        setContent(res.fields.details);
+        setWhere(res.fields.jurisdiction);
+        setLat(res.fields.lat);
+        setLng(res.fields.lng);
+      });
+      setDone(true);
+      processChunks(true, data.log_id);
+    }
+
+    if (data.message) {
+      setChat(prevChat => [...prevChat, { text: data.message, isUser: false }]);
+      playTts(data.message);
+    }
+  };
+
+  socket.current.onerror = (error) => {
+    console.error('WebSocket error:', error);
+  };
+
+  socket.current.onclose = () => {
+    console.log('WebSocket closed');
+  };
+
+  return () => {
+    if (socket.current) socket.current.close();
+  };
   }, []);
 
   // 녹음 시작
@@ -113,20 +126,19 @@ const Report4 = () => {
   };
 
   const processChunks = async (isFinal = false, id = 0) => {
-    if (isFinal) {
+  if (isFinal) {
       const allBlob = new Blob(allChunksRef.current, { 'type': 'audio/webm' });
       const allArrayBuffer = await allBlob.arrayBuffer();
       const allAudioData = new Uint8Array(allArrayBuffer);
       const allWavBuffer = await convertToWav(allAudioData);
-      socket.emit('audio_full', {'wav' : allWavBuffer, 'log_id' : id});
+      socket.current.send(allWavBuffer);
       allChunksRef.current = [];
-      socket.disconnect();
     } else {
       const blob = new Blob(chunksRef.current, { 'type': 'audio/webm' });
       const arrayBuffer = await blob.arrayBuffer();
       const audioData = new Uint8Array(arrayBuffer);
       const wavBuffer = await convertToWav(audioData);
-      socket.emit('audio_data', wavBuffer);
+      socket.current.send(wavBuffer);
       chunksRef.current = [];
     }
   };
