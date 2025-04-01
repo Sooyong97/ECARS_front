@@ -7,7 +7,7 @@ const SERVER_URL = process.env.REACT_APP_SERVER_URL
 
 // 신고내역 가져오기
 export const getReport = () => {
-  return axios.get(SERVER_URL + 'postlog/', {
+  return axios.get(SERVER_URL + 'api/calllogs', {
     headers: {
       Authorization: access
     }
@@ -18,7 +18,7 @@ export const getReport = () => {
 
 // 아이디별 신고내역 가져오기
 export const getReportById = (id) => {
-  return axios.get(`${SERVER_URL}postlog/${id}/`, {
+  return axios.get(`${SERVER_URL}api/calllogs/${id}`, {
     headers: {
       'X-CSRFToken': csrftoken
     }

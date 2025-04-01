@@ -6,7 +6,7 @@ const SERVER_URL = process.env.REACT_APP_SERVER_URL
 
 // 전체 공지사항 가져오기
 export const getNotice = () => {
-  return axios.get(SERVER_URL + 'postlist/', {
+  return axios.get(SERVER_URL + 'api/posts', {
     headers: {
       Authorization: access
     }
@@ -17,7 +17,7 @@ export const getNotice = () => {
 
 // 아이디에 해당하는 공지사항 가져오기
 export const getNoticeById = (id) => {
-  return axios.get(`${SERVER_URL}postdetail/${id}/`, {
+  return axios.get(`${SERVER_URL}api/posts/${id}`, {
     headers: {
       Authorization: access
     }
@@ -29,7 +29,8 @@ export const getNoticeById = (id) => {
 
 // 공지사항 글쓰기
 export const writeNotification = (user_id, title, content) => {
-  axios.post(SERVER_URL + 'postcreate/', {user_id, title, content}, {
+  axios.post(SERVER_URL + 'api/posts', null, {
+    params: { userId: user_id, title, content },
     headers: {
       Authorization: access
     }
@@ -44,7 +45,8 @@ export const writeNotification = (user_id, title, content) => {
 
 // 수정
 export const editNotice = (id, user_id, title, content) => {
-  axios.post(`${SERVER_URL}postedit/${id}/`, {user_id, title, content}, {
+  axios.put(`${SERVER_URL}api/posts/${id}`, null, {
+    params: { userId: user_id, title, content },
     headers: {
       Authorization: access
     }
@@ -56,7 +58,7 @@ export const editNotice = (id, user_id, title, content) => {
 // 삭제
 export const deleteNotice = (id) => {
   const onDelete = () => {
-    axios.delete(`${SERVER_URL}postdelete/${id}/`, {
+    axios.delete(`${SERVER_URL}api/posts/${id}`, {
       headers: {
         Authorization: access
       }
