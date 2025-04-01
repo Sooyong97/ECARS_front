@@ -115,7 +115,8 @@ const Report2 = () => {
       console.error('Speech Recognition Error', event.error);
     };
 
-    socket.current = new WebSocket("ws://localhost:8080/ecars/ws/audio");
+    const token = localStorage.getItem('access');
+    socket.current = new WebSocket(`ws://localhost:8080/ecars/ws/audio?token=${token}`);
 
     socket.current.onopen = () => {
       console.log('WebSocket connected');

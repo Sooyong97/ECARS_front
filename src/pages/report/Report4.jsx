@@ -36,7 +36,8 @@ const Report4 = () => {
 
   // 백 -> 프론트 소켓
   useEffect(() => {
-  socket.current = new WebSocket("ws://localhost:8080/ecars/ws/audio");
+  const token = localStorage.getItem('access');
+  socket.current = new WebSocket(`ws://localhost:8080/ecars/ws/audio?token=${token}`);
 
   socket.current.onopen = () => {
     console.log('WebSocket connected');
