@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-import io from 'socket.io-client';
+import { useRef } from 'react';
 import axios from 'axios';
 import { ReactMic } from 'react-mic'; 
 
@@ -8,9 +8,7 @@ import styled from 'styled-components';
 import { FullContainer, GoBackBtn } from '../../components/CommonStyles';
 
 const SERVER_URL = 'http://localhost:8000/stt/';
-const socket = io('http://localhost:5000', {
-  transports: ['websocket']
-});
+const socket = useRef(null);
 
 
 const BoldText = styled.p`
@@ -117,10 +115,30 @@ const Report2 = () => {
       console.error('Speech Recognition Error', event.error);
     };
 
-    // 서버에서 보내주는 정보
-    socket.on('audio_text', (data) => {
-      console.log(data)
-    })
+    socket.current = new WebSocket("ws://localhost:8080/ecars/ws/audio");
+
+    socket.current.onopen = () => {
+      console.log('WebSocket connected');
+    };
+
+    socket.current.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      console.log('Received:', data);
+      setTtsText(data.message);
+      setSttText(data.message);
+    };
+
+    socket.current.onerror = (error) => {
+      console.error('WebSocket error:', error);
+    };
+
+    socket.current.onclose = () => {
+      console.log('WebSocket closed');
+    };
+
+    return () => {
+      if (socket.current) socket.current.close();
+    };
   }, []);
 
 return (
