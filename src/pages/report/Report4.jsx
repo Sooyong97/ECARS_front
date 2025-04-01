@@ -126,7 +126,10 @@ const Report4 = () => {
   };
 
   const processChunks = async (isFinal = false, id = 0) => {
-  if (isFinal) {
+    if (isSending.current) return;
+    isSending.current = true;
+
+    if (isFinal) {
       const allBlob = new Blob(allChunksRef.current, { 'type': 'audio/webm' });
       const allArrayBuffer = await allBlob.arrayBuffer();
       const allAudioData = new Uint8Array(allArrayBuffer);
@@ -141,6 +144,10 @@ const Report4 = () => {
       socket.current.send(wavBuffer);
       chunksRef.current = [];
     }
+
+    setTimeout(() => {
+      isSending.current = false;
+    }, 3000); // 3초 후 다시 전송 허용
   };
 
   const startSilenceTimer = () => {
