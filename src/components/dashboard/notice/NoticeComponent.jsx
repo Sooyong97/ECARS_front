@@ -11,7 +11,7 @@ const NoticeComponent = () => {
   const [notice, setNotice] = useState([]);
 
   useEffect(() => {
-    getNotice().then((res) => res && setNotice(res.slice(0, 3)));
+    getNotice().then((res) => res && res.posts && setNotice(res.posts.slice(0, 3)));
   }, [])
 
   return (

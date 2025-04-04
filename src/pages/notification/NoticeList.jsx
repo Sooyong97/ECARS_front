@@ -28,8 +28,10 @@ const NoticeList = () => {
   // 전체 공지사항 가져오기
   const getAllNotice = () => {
     getNotice().then((res) => {
-      setTotalNotice(res);
-      setShowNotice(res);
+      if (res && res.posts) {
+        setTotalNotice(res.posts);
+        setShowNotice(res.posts);
+      }
     })
   }
 
