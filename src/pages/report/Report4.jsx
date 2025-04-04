@@ -1,18 +1,18 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
+// Removed import { useNavigate } from 'react-router-dom'; since it's unused
 
 import { ReactMic } from 'react-mic';
 import { convertToWav } from '../../utils/report';
 
 import './Report.css';
-// import io from 'socket.io-client';
 import Overlay from '../../components/call/Overlay';
 import CallModal from '../../components/call/CallModal';
 import { GoBackBtn } from '../../components/CommonStyles';
 import { getReportById } from '../../apis/report';
 
-const socket = useRef(null);
-
 const Report4 = () => {
+  const socket = useRef(null);
+  const isSending = useRef(false);
   const [start, setStart] = useState(false);
   const [recording, setRecording] = useState(false);
   const [chat, setChat] = useState([{ text: '녹음 버튼을 누르고 신고를 시작해주세요.', isUser: false }]);
@@ -34,55 +34,24 @@ const Report4 = () => {
   const recognitionRef = useRef(null);
   const silenceTimerRef = useRef(null);
 
-  // 백 -> 프론트 소켓
-  useEffect(() => {
-  const token = localStorage.getItem('access');
-  socket.current = new WebSocket(`ws://localhost:8080/ecars/ws/audio?token=${token}`);
-
-  socket.current.onopen = () => {
-    console.log('WebSocket connected');
-  };
-
-  socket.current.onmessage = (event) => {
-    const data = JSON.parse(event.data);
-    console.log('Received:', data);
-    setIsProcessing(false);
-
-    if (data.log_id) {
-      getReportById(data.log_id).then((res) => {
-        setAddress(res.fields.address_name);
-        setPlace(res.fields.place_name);
-        setTime(res.fields.date);
-        setContent(res.fields.details);
-        setWhere(res.fields.jurisdiction);
-        setLat(res.fields.lat);
-        setLng(res.fields.lng);
-      });
-      setDone(true);
-      processChunks(true, data.log_id);
+  // 녹음 중지
+  const pauseRecording = useCallback(() => {
+    if (mediaRecorderRef.current) {
+      mediaRecorderRef.current.stop();
+      recognitionRef.current.stop();
+      setRecording(false);
+      clearTimeout(silenceTimerRef.current);
     }
-
-    if (data.message) {
-      setChat(prevChat => [...prevChat, { text: data.message, isUser: false }]);
-      playTts(data.message);
-    }
-  };
-
-  socket.current.onerror = (error) => {
-    console.error('WebSocket error:', error);
-  };
-
-  socket.current.onclose = () => {
-    console.log('WebSocket closed');
-  };
-
-  return () => {
-    if (socket.current) socket.current.close();
-  };
   }, []);
 
+  const startSilenceTimer = useCallback(() => {
+    silenceTimerRef.current = setTimeout(async () => {
+      pauseRecording();
+    }, 3000);
+  }, [pauseRecording]);
+
   // 녹음 시작
-  const startRecording = () => {
+  const startRecording = useCallback(() => {
     setStart(true);
 
     navigator.mediaDevices.getUserMedia({ audio: true })
@@ -108,23 +77,71 @@ const Report4 = () => {
       .catch(err => {
         console.error('Error accessing microphone:', err);
       });
-  };
+  }, [startSilenceTimer]);
 
-  // 녹음 중지
-  const pauseRecording = () => {
-    if (mediaRecorderRef.current) {
-      mediaRecorderRef.current.stop();
-      recognitionRef.current.stop();
-      setRecording(false);
-      clearTimeout(silenceTimerRef.current);
-    }
-  }
+  // tts
+  const playTts = useCallback((text) => {
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'ko-KR';
+    window.speechSynthesis.speak(utterance);
 
-  // 녹음 끝
-  const stopRecording = () => {
-    setStart(false);
-    pauseRecording();
-  };
+    utterance.onend = () => {
+      startRecording();
+    };
+  }, [startRecording]);
+
+  const resetSilenceTimer = useCallback(() => {
+    clearTimeout(silenceTimerRef.current);
+    startSilenceTimer();
+  }, [startSilenceTimer]);
+
+  // 백 -> 프론트 소켓
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    const token = localStorage.getItem('access');
+    socket.current = new WebSocket(`ws://localhost:8080/ecars/ws/audio?token=${token}`);
+
+    socket.current.onopen = () => {
+      console.log('WebSocket connected');
+    };
+
+    socket.current.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      console.log('Received:', data);
+      setIsProcessing(false);
+
+      if (data.log_id) {
+        getReportById(data.log_id).then((res) => {
+          setAddress(res.fields.address_name);
+          setPlace(res.fields.place_name);
+          setTime(res.fields.date);
+          setContent(res.fields.details);
+          setWhere(res.fields.jurisdiction);
+          setLat(res.fields.lat);
+          setLng(res.fields.lng);
+        });
+        setDone(true);
+        processChunks(true, data.log_id);
+      }
+
+      if (data.message) {
+        setChat(prevChat => [...prevChat, { text: data.message, isUser: false }]);
+        playTts(data.message);
+      }
+    };
+
+    socket.current.onerror = (error) => {
+      console.error('WebSocket error:', error);
+    };
+
+    socket.current.onclose = () => {
+      console.log('WebSocket closed');
+    };
+
+    return () => {
+      if (socket.current) socket.current.close();
+    };
+  }, [playTts]);
 
   const processChunks = async (isFinal = false, id = 0) => {
     if (isSending.current) return;
@@ -149,28 +166,6 @@ const Report4 = () => {
     setTimeout(() => {
       isSending.current = false;
     }, 3000); // 3초 후 다시 전송 허용
-  };
-
-  const startSilenceTimer = () => {
-    silenceTimerRef.current = setTimeout(async () => {
-      pauseRecording();
-    }, 3000);
-  };
-
-  const resetSilenceTimer = () => {
-    clearTimeout(silenceTimerRef.current);
-    startSilenceTimer();
-  };
-
-  // tts
-  const playTts = (text) => {
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'ko-KR';
-    window.speechSynthesis.speak(utterance);
-
-    utterance.onend = () => {
-      startRecording();
-    };
   };
 
   // stt
@@ -211,7 +206,7 @@ const Report4 = () => {
     recognitionRef.current.onerror = (event) => {
       console.error('Speech Recognition Error', event.error);
     };
-  }, []);
+  }, [resetSilenceTimer]);
 
   return (
     <div className="report-container">
@@ -235,7 +230,7 @@ const Report4 = () => {
             <button className="btn-border" onClick={startRecording} disabled={recording}>
               <div className="circle" />
             </button> :
-            <button className="btn-border" onClick={stopRecording} disabled={!recording}>
+            <button className="btn-border" onClick={pauseRecording} disabled={!recording}>
               <div className="square" />
             </button>
           }
