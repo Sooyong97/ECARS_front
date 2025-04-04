@@ -16,8 +16,8 @@ const Login = () => {
   const SERVER_URL = process.env.REACT_APP_SERVER_URL;
 
   useEffect(() => {
-    axios.get(`${SERVER_URL}accounts/signup/`)
-  }, [])
+    axios.get(`${SERVER_URL}api/csrf-token`)
+  }, [SERVER_URL])
 
   return (
     <FullContainer>

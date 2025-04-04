@@ -7,6 +7,9 @@ import Draggable from 'react-draggable';
 import { faUser } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { BackgroundVideo1 } from "../../components/CommonStyles";
+const SERVER_URL = process.env.REACT_APP_SERVER_URL;
+
+axios.defaults.withCredentials = true;
 
 const Navbar = styled.div`
   position: absolute;
@@ -150,7 +153,15 @@ const Home = () => {
 
   useEffect(() => {
     // csrf token 가져오기
-    axios.get(process.env.REACT_APP_SERVER_URL + 'signup/')
+  axios.get(SERVER_URL + 'api/csrf-token', {
+      withCredentials: true
+    })
+    .then((response) => {
+      console.log(response.data);  // Handle CSRF token response if needed
+    })
+    .catch((error) => {
+      console.log(error);  // Handle error response
+    });
   }, [])
 
   return (

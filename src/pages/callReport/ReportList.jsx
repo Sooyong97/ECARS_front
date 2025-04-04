@@ -1,6 +1,5 @@
+import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import React, { useEffect, useState } from 'react';
-
 import { getReport } from '../../apis/report';
 import { toKoreaTime } from '../../utils/utils';
 
@@ -14,7 +13,7 @@ const ReportList = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   
-  const fetchReports = () => {
+  const fetchReports = useCallback(() => {
     const filteredReports = allReports.filter(report => 
       report.fields.address_name.includes(searchQuery) ||
       report.fields.category.includes(searchQuery) ||
@@ -26,7 +25,7 @@ const ReportList = () => {
     const indexOfFirstReport = indexOfLastReport - reportsPerPage;
     const currentReports = filteredReports.slice(indexOfFirstReport, indexOfLastReport);
     setReports(currentReports);
-  };
+  }, [allReports, currentPage, searchQuery]);
         
   const totalPages = Math.ceil(
     allReports.filter(report => 
@@ -60,7 +59,7 @@ const ReportList = () => {
 
   useEffect(() => {
     fetchReports();
-  }, [allReports, currentPage, searchQuery]);
+  }, [fetchReports, allReports, currentPage, searchQuery]);
 
   return (
     <div className='report-list-container'>

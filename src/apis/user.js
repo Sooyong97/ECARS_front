@@ -2,14 +2,14 @@ import axios from 'axios';
 import { getCookie } from '../utils/cookie';
 import { errorWithoutBtn, successWithoutBtn } from '../utils/swal';
 
-const csrftoken = getCookie('csrftoken');
+const csrftoken = getCookie('XSRF-TOKEN');
 const SERVER_URL = process.env.REACT_APP_SERVER_URL
 
 // 로그인
 export const login = (id, password) => {
-  axios.post(SERVER_URL + 'api/auth/signin/', { id, password }, {
+  axios.post(SERVER_URL + 'api/auth/signin', { id, password }, {
     headers: {
-      'X-CSRFToken': csrftoken
+      'X-XSRF-TOKEN': csrftoken
     }
   })
   .then((res) => {
@@ -35,7 +35,7 @@ export const login = (id, password) => {
 export const idCheck = (id) => {
   return axios.post(SERVER_URL + 'api/accounts/idcheck/', {id}, {
     headers: {
-      'X-CSRFToken': csrftoken
+      'X-XSRF-TOKEN': csrftoken
     }
   })
   .then((res) => {return res.data.valid ? true : false})
@@ -44,11 +44,11 @@ export const idCheck = (id) => {
 
 // 이메일 중복 확인
 export const emailCheck = (email) => {
-  const csrftoken = getCookie('csrftoken');
+  const csrftoken = getCookie('XSRF-TOKEN');
 
   return axios.post(SERVER_URL + 'api/accounts/emailcheck/', {email}, {
     headers: {
-      'X-CSRFToken': csrftoken
+      'X-XSRF-TOKEN': csrftoken
     }
   })
   .then((res) => {return res.data.valid ? true : false})
@@ -62,7 +62,7 @@ export const emailCheck = (email) => {
 export const sendCode = (email) => {
   return axios.post(SERVER_URL + 'api/auth/send-email/', {email}, {
     headers: {
-      'X-CSRFToken': csrftoken
+      'X-XSRF-TOKEN': csrftoken
     }
   })
   .then(() => {
@@ -79,18 +79,18 @@ export const sendCode = (email) => {
 export const checkCode = (email, code) => {
   return axios.post(SERVER_URL + 'api/auth/verify-code/', {email, code}, {
     headers: {
-      'X-CSRFToken': csrftoken
+      'X-XSRF-TOKEN': csrftoken
     }
   })
   .then((res) => {
     const msg = res.data.message;
     
-    if (msg == 'SUCCESS') return true;
+    if (msg === 'SUCCESS') return true;
   })
   .catch((error) => {
     const msg = error.response.data.message
     
-    if (msg == 'INVALID_CODE') errorWithoutBtn('인증번호가 정확하지 않습니다.');
+    if (msg === 'INVALID_CODE') errorWithoutBtn('인증번호가 정확하지 않습니다.');
     console.log(error);
   })
 }
@@ -99,7 +99,7 @@ export const checkCode = (email, code) => {
 export const signup = (id, name, email, password) => {
   return axios.post(SERVER_URL + 'api/accounts/signup/', { name, id, password, email }, {
     headers: {
-      'X-CSRFToken': csrftoken
+      'X-XSRF-TOKEN': csrftoken
     }
   })
   .then((res) => {
@@ -108,8 +108,8 @@ export const signup = (id, name, email, password) => {
   })
   .catch((error) => {
     const code = error.response.data.errorCode;
-    if (code == 0) errorWithoutBtn('비밀번호는 8글자 이상이어야 합니다.', '대문자, 숫자, 특수기호를 최소 1개 이상 포함해주세요.');
-    else if (code == 1) errorWithoutBtn('이미 가입된 이메일입니다.');
+    if (code === 0) errorWithoutBtn('비밀번호는 8글자 이상이어야 합니다.', '대문자, 숫자, 특수기호를 최소 1개 이상 포함해주세요.');
+    else if (code === 1) errorWithoutBtn('이미 가입된 이메일입니다.');
 
     console.error('회원가입:', error);
   })
@@ -141,7 +141,7 @@ export const logout = () => {
 export const findid = (email) => {
   return axios.post(SERVER_URL + 'api/accounts/findid/', { email }, {
     headers: {
-      'X-CSRFToken': csrftoken
+      'X-XSRF-TOKEN': csrftoken
     }
   })
   .then((res) => {
@@ -149,7 +149,7 @@ export const findid = (email) => {
   })
   .catch((error) => {
     const status = error.response.status;
-    if (status == 404) errorWithoutBtn('해당 이메일로 가입된 정보가 없습니다.');
+    if (status === 404) errorWithoutBtn('해당 이메일로 가입된 정보가 없습니다.');
     console.error('아이디 찾기:', error);
   })
 }
@@ -158,7 +158,7 @@ export const findid = (email) => {
 export const verifyid = (email, code) => {
   return axios.post(SERVER_URL + 'api/accounts/verifyid/', { email, code }, {
     headers: {
-      'X-CSRFToken': csrftoken
+      'X-XSRF-TOKEN': csrftoken
     }
   })
   .then((res) => {
@@ -166,7 +166,7 @@ export const verifyid = (email, code) => {
   })
   .catch((error) => {
     const msg = error.response.data.message;
-    if (msg == 'INVALID_CODE') errorWithoutBtn('인증번호가 정확하지 않습니다.');
+    if (msg === 'INVALID_CODE') errorWithoutBtn('인증번호가 정확하지 않습니다.');
     console.log(error);
   })
 }
@@ -175,13 +175,13 @@ export const verifyid = (email, code) => {
 export const changepw = (id, email) => {
   return axios.post(SERVER_URL + 'api/accounts/indpw/', { id, email }, {
     headers: {
-      'X-CSRFToken': csrftoken
+      'X-XSRF-TOKEN': csrftoken
     }
   })
   .then((res) => {return res.data.valid ? true : false})
   .catch((error) => {
     const status = error.response.status;
-    if (status == 404) errorWithoutBtn('아이디나 이메일 정보가 정확하지 않습니다.');
+    if (status === 404) errorWithoutBtn('아이디나 이메일 정보가 정확하지 않습니다.');
     console.error('비밀번호 변경:', error);
   })
 }
@@ -190,13 +190,13 @@ export const changepw = (id, email) => {
 export const verifypw = (id, email, code) => {
   return axios.post(SERVER_URL + 'api/accounts/verifypw/', { id, email, code }, {
     headers: {
-      'X-CSRFToken': csrftoken
+      'X-XSRF-TOKEN': csrftoken
     }
   })
-  .then((res) => {return res.data.message == 'SUCCESS' ? true : false})
+  .then((res) => {return res.data.message === 'SUCCESS' ? true : false})
   .catch((error) => {
     const msg = error.response.data.message;
-    if (msg == 'INVALID_CODE') errorWithoutBtn('인증번호가 정확하지 않습니다.');
+    if (msg === 'INVALID_CODE') errorWithoutBtn('인증번호가 정확하지 않습니다.');
     console.log(error);
   })
 }
@@ -205,7 +205,7 @@ export const verifypw = (id, email, code) => {
 export const resetPassword = (id, newPassword) => {
   return axios.post(SERVER_URL + 'api/accounts/changepw/', { id, newPassword }, {
     headers: {
-      'X-CSRFToken': csrftoken
+      'X-XSRF-TOKEN': csrftoken
     }
   })
   .then((res) => {

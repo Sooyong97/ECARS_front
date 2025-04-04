@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 
-import { toKoreaTime } from '../../utils/utils';
 import { getReportById } from '../../apis/report';
+import { toKoreaTime } from '../../utils/utils';
 
 import './ReportContent.css';
 import Header from '../../components/header/Header'; 
@@ -13,25 +13,17 @@ const ReportDetails = () => {
   const navigate = useNavigate();
   const [report, setReport] = useState(null);
 
+  const pauseRecording = () => {
+  };
+
+  const startSilenceTimer = () => {
+  };
+
   useEffect(() => {
     getReportById(id).then((res) => {
       setReport(res);
     })
-  }, []);
-
-  // useEffect(() => {
-  //   const allReports = [
-  //     { pk: 1, fields: { date: '2023-01-01T10:00:00Z', address_name: '서울시 강남구', place_name: '강남역', largeCategory: '사고', midCategory: '교통사고', content: '신고 내용 1', lat: 37.497946, long: 127.027600, recording: '녹취록 1', recordingUrl: '/recordings/exRec.mp3'  } },
-  //     { pk: 2, fields: { date: '2023-01-02T11:00:00Z', address_name: '서울시 서초구', place_name: '서초역', largeCategory: '화재', midCategory: '방화', content: '신고 내용 2', lat: 37.491899, long: 127.007917, recording: '녹취록 2', recordingUrl: '/recordings/exRec.mp3'  } },
-  //     { pk: 3, fields: { date: '2023-01-03T12:00:00Z', address_name: '서울시 송파구', place_name: '잠실역', largeCategory: '응급', midCategory: '자살시도', content: '신고 내용 3', lat: 37.513276, long: 127.100199, recording: '녹취록 3', recordingUrl: '/recordings/exRec.mp3'  } },
-  //     { pk: 4, fields: { date: '2023-01-01T13:00:00Z', address_name: '서울시 강남구', place_name: '강남구보건소', largeCategory: '사고', midCategory: '실종자 신고', content: '신고 내용 4', lat: 37.517408, long: 127.046367, recording: '녹취록 4', recordingUrl: '/recordings/exRec.mp3'  } },
-  //     { pk: 5, fields: { date: '2023-01-02T15:00:00Z', address_name: '서울시 광진구', place_name: '스타벅스 자양역점', largeCategory: '사고', midCategory: '추락사고', content: '신고 내용 5', lat: 37.537846, long: 127.068785, recording: '녹취록 5', recordingUrl: '/recordings/exRec.mp3'  } },
-  //     { pk: 6, fields: { date: '2023-01-03T15:00:00Z', address_name: '서울시 강동구', place_name: '강동도서관', largeCategory: '화재', midCategory: '화재', content: '신고 내용 6', lat: 37.548798, long: 127.145425, recording: '녹취록 6', recordingUrl: '/recordings/exRec.mp3'  } },
-  //   ];
-
-  //   const foundReport = allReports.find(report => report.pk === parseInt(id));
-  //   setReport(foundReport);
-  // }, [id]);
+  }, [id]); // eslint-disable-next-line react-hooks/exhaustive-deps
 
   if (!report) {
     return <div>Loading...</div>;

@@ -5,8 +5,8 @@ import App from './App';
 import './index.css';
 
 axios.defaults.withCredentials = true;
-axios.defaults.xsrfCookieName = 'csrftoken';
-axios.defaults.xsrfHeaderName = 'X-CSRFToken';
+axios.defaults.xsrfCookieName = 'XSRF-TOKEN';
+axios.defaults.xsrfHeaderName = 'X-XSRF-TOKEN';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
