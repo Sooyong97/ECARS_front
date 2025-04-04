@@ -10,7 +10,8 @@ export const login = (id, password) => {
   axios.post(SERVER_URL + 'api/auth/signin', { id, password }, {
     headers: {
       'X-XSRF-TOKEN': csrftoken
-    }
+    },
+    withCredentials: true
   })
   .then((res) => {
     const token = res.data.token;
@@ -32,26 +33,42 @@ export const login = (id, password) => {
 };
 
 // 아이디 중복 확인
-export const idCheck = (id) => {
-  return axios.post(SERVER_URL + 'api/accounts/idcheck/', {id}, {
-    headers: {
-      'X-XSRF-TOKEN': csrftoken
-    }
-  })
-  .then((res) => {return res.data.valid ? true : false})
-  .catch((error) => console.log(error))
-}
+export const idCheck = async (id) => {
+  try {
+    // CSRF 토큰 먼저 받아오기
+    await axios.get(SERVER_URL + 'api/csrf-token', { withCredentials: true });
+
+    // 쿠키에서 토큰 다시 꺼냄
+    const csrftoken = getCookie('XSRF-TOKEN');
+
+    // ID 중복 검사 요청
+    const res = await axios.post(SERVER_URL + 'api/accounts/idcheck', { id }, {
+      headers: {
+        'X-XSRF-TOKEN': csrftoken,
+        'Content-Type': 'application/json'
+      },
+      withCredentials: true
+    });
+
+    return res.data.valid;
+  } catch (error) {
+    console.error("ID 중복 검사 오류:", error);
+    return false;
+  }
+};
 
 // 이메일 중복 확인
 export const emailCheck = (email) => {
   const csrftoken = getCookie('XSRF-TOKEN');
 
-  return axios.post(SERVER_URL + 'api/accounts/emailcheck/', {email}, {
+  return axios.post(SERVER_URL + 'api/accounts/emailcheck', { email }, {
     headers: {
-      'X-XSRF-TOKEN': csrftoken
-    }
+      'X-XSRF-TOKEN': csrftoken,
+      'Content-Type': 'application/json'
+    },
+    withCredentials: true
   })
-  .then((res) => {return res.data.valid ? true : false})
+  .then((res) => {return res.data.valid})
   .catch((error) => {
     console.log(error);
     errorWithoutBtn('알 수 없는 오류가 발생했습니다.', '잠시후 다시 시도해주세요.');
@@ -60,10 +77,12 @@ export const emailCheck = (email) => {
 
 // 인증코드 발송
 export const sendCode = (email) => {
-  return axios.post(SERVER_URL + 'api/auth/send-email/', {email}, {
+  return axios.post(SERVER_URL + 'api/auth/send-email', {email}, {
     headers: {
-      'X-XSRF-TOKEN': csrftoken
-    }
+      'X-XSRF-TOKEN': csrftoken,
+      'Content-Type': 'application/json'
+    },
+    withCredentials: true
   })
   .then(() => {
     successWithoutBtn('인증번호가 발송되었습니다.', '5분 안에 인증번호를 입력해주세요.', () => {});
@@ -77,10 +96,12 @@ export const sendCode = (email) => {
 
 // 인증코드 확인
 export const checkCode = (email, code) => {
-  return axios.post(SERVER_URL + 'api/auth/verify-code/', {email, code}, {
+  return axios.post(SERVER_URL + 'api/auth/verify-code', {email, code}, {
     headers: {
-      'X-XSRF-TOKEN': csrftoken
-    }
+      'X-XSRF-TOKEN': csrftoken,
+      'Content-Type': 'application/json'
+    },
+    withCredentials: true
   })
   .then((res) => {
     const msg = res.data.message;
@@ -97,10 +118,12 @@ export const checkCode = (email, code) => {
 
 // 회원가입
 export const signup = (id, name, email, password) => {
-  return axios.post(SERVER_URL + 'api/accounts/signup/', { name, id, password, email }, {
+  return axios.post(SERVER_URL + 'api/accounts/signup', { name, id, password, email }, {
     headers: {
-      'X-XSRF-TOKEN': csrftoken
-    }
+      'X-XSRF-TOKEN': csrftoken,
+      'Content-Type': 'application/json'
+    },
+    withCredentials: true
   })
   .then((res) => {
     const msg = res.data.message;
@@ -120,10 +143,11 @@ export const getUser = async () => {
   const access = localStorage.getItem('access');
 
   try {
-    const res = await axios.post(SERVER_URL + 'api/accounts/userJWT/', {}, {
+    const res = await axios.post(SERVER_URL + 'api/accounts/userJWT', {}, {
       headers: {
         Authorization: `Bearer ${access}`
-      }
+      },
+      withCredentials: true
     })
     return res.data
   } catch (error) {
@@ -142,7 +166,8 @@ export const findid = (email) => {
   return axios.post(SERVER_URL + 'api/accounts/findid/', { email }, {
     headers: {
       'X-XSRF-TOKEN': csrftoken
-    }
+    },
+    withCredentials: true
   })
   .then((res) => {
     return res.data.message === 'EMAIL_SENT';
@@ -159,7 +184,8 @@ export const verifyid = (email, code) => {
   return axios.post(SERVER_URL + 'api/accounts/verifyid/', { email, code }, {
     headers: {
       'X-XSRF-TOKEN': csrftoken
-    }
+    },
+    withCredentials: true
   })
   .then((res) => {
     return res.data.id;
@@ -176,7 +202,8 @@ export const changepw = (id, email) => {
   return axios.post(SERVER_URL + 'api/accounts/indpw/', { id, email }, {
     headers: {
       'X-XSRF-TOKEN': csrftoken
-    }
+    },
+    withCredentials: true
   })
   .then((res) => {return res.data.valid ? true : false})
   .catch((error) => {
@@ -191,7 +218,8 @@ export const verifypw = (id, email, code) => {
   return axios.post(SERVER_URL + 'api/accounts/verifypw/', { id, email, code }, {
     headers: {
       'X-XSRF-TOKEN': csrftoken
-    }
+    },
+    withCredentials: true
   })
   .then((res) => {return res.data.message === 'SUCCESS' ? true : false})
   .catch((error) => {
@@ -206,7 +234,8 @@ export const resetPassword = (id, newPassword) => {
   return axios.post(SERVER_URL + 'api/accounts/changepw/', { id, newPassword }, {
     headers: {
       'X-XSRF-TOKEN': csrftoken
-    }
+    },
+    withCredentials: true
   })
   .then((res) => {
     return res.data.message === 'PASSWORD_UPDATED';
