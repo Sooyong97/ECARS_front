@@ -8,7 +8,7 @@ const SERVER_URL = process.env.REACT_APP_SERVER_URL
 export const getNotice = () => {
   return axios.get(SERVER_URL + 'api/posts', {
     headers: {
-      Authorization: access
+      Authorization: `Bearer ${access}`
     }
   })
   .then((res) => {return res.data})
@@ -19,7 +19,7 @@ export const getNotice = () => {
 export const getNoticeById = (id) => {
   return axios.get(`${SERVER_URL}api/posts/${id}`, {
     headers: {
-      Authorization: access
+      Authorization: `Bearer ${access}`
     }
   })
   .then((res) => {return res.data})
@@ -32,7 +32,7 @@ export const writeNotification = (user_id, title, content) => {
   axios.post(SERVER_URL + 'api/posts', null, {
     params: { userId: user_id, title, content },
     headers: {
-      Authorization: access
+      Authorization: `Bearer ${access}`
     }
   })
   .then(() => successWithoutBtn('공지사항이 등록되었습니다.', '', () => window.location.href = '/notice'))
@@ -48,7 +48,7 @@ export const editNotice = (id, user_id, title, content) => {
   axios.put(`${SERVER_URL}api/posts/${id}`, null, {
     params: { userId: user_id, title, content },
     headers: {
-      Authorization: access
+      Authorization: `Bearer ${access}`
     }
   })
   .then((res) => successWithoutBtn('공지사항이 수정되었습니다.', '', () => window.location.href = '/notice/' + id))
@@ -60,7 +60,7 @@ export const deleteNotice = (id) => {
   const onDelete = () => {
     axios.delete(`${SERVER_URL}api/posts/${id}`, {
       headers: {
-        Authorization: access
+        Authorization: `Bearer ${access}`
       }
     })
     .then((res) => {window.location.href = '/notice'})
